@@ -1,18 +1,3 @@
-from fastapi import FastAPI, Request
-from fastapi.templating import Jinja2Templates
-from httpx import request
-
-app = FastAPI(
-    title="FastAPI Blog"
-)
-
-templates = Jinja2Templates(
-    directory="templates"
-)
-
-
-
-
 posts: list[dict] = [
     {
         "id": 1,
@@ -29,15 +14,3 @@ posts: list[dict] = [
         "date_posted": "April 21, 2025",
     },
 ]
-
-
-@app.get("/",include_in_schema=False)
-@app.get("/posts",include_in_schema=False)
-def home(request: Request):
-    return templates.TemplateResponse(request,"home.html",{"posts" : posts})
-
-@app.get("/api/posts")
-def get_posts():
-    return posts
-# Automatically converted to JSON Array
-
