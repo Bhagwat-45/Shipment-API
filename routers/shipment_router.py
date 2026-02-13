@@ -1,7 +1,8 @@
+from curses.ascii import HT
 from fastapi import APIRouter,HTTPException,status
 from typing import Optional,Any
 from data import shipments
-
+from schema.shipment_schema import Shipment
 
 router = APIRouter(
     tags=["Shipments"],
@@ -33,15 +34,19 @@ def get_shipment_by_field(field:str, id: int)-> dict[str,Any]:
 
 
 @router.post("/shipments",status_code=status.HTTP_201_CREATED)
-def new_shipment(body: dict[str,Any]) -> dict[str,Any]:
+def new_shipment(body: Shipment) -> dict[str,Any]:
     new_id = max(shipments.keys()) + 1
 
-    content: str = body["content"]
-    weight : float = body["weight"]
+
+    if body.weight > 25:
+        raise HTTPException(
+            status_code= status.HTTP_406_NOT_ACCEPTABLE,
+            detail= "Maximum weight is 25 Kgs"
+        )
 
     shipments[new_id] = {
-        "content" : content,
-        "weight" : weight,
+        "content" : body.content,
+        "weight" : body.weight,
         "status" : "placed"
     }
 
@@ -51,13 +56,13 @@ def new_shipment(body: dict[str,Any]) -> dict[str,Any]:
 
 @router.put("/shipments")
 def update_shipments(
-    id: int,content: str, weight : float,status: str
+    id: int,body: Shipment
 )->dict[str,Any]:
     if id not in shipments:
         raise HTTPException(status_code=404,detail="ID not found!")
     shipments[id] = {
-        "content" : content,
-        "weight" : weight,
+        "content" : body.content,
+        "weight" : body.weight,
         "status" : status
     }
 
