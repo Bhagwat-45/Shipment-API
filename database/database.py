@@ -1,15 +1,14 @@
+from contextlib import contextmanager
 import sqlite3
 from typing import Any
-
 from schema.shipment_schema import ShipmentCreate, ShipmentUpdate
 
 class Database:
-    def __init__(self):
+    def connect_to_db(self):
         self.conn = sqlite3.connect("sqlite3.db",check_same_thread=False)
 
         self.cur = self.conn.cursor()
 
-        self.create_table()
 
     def create_table(self):
         create_query = """
@@ -88,5 +87,13 @@ class Database:
         self.conn.close()
 
 
+@contextmanager
+def managed_db():
+    db = Database()
 
+    db.connect_to_db()
+    db.create_table()
 
+    yield db
+
+    db.close()
