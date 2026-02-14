@@ -11,7 +11,6 @@ class ShipmentStatus(str,Enum):
 class BaseShipment(BaseModel):
     content: str = Field(description="Gives us what it contains",max_length=50)
     weight : float = Field(description="Weight of the package",lt=25,ge=1)
-    destination : int
 
 
 class ShipmentRead(BaseShipment):
