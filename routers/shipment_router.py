@@ -13,8 +13,8 @@ router = APIRouter(
 db = Database()
 
 @router.get("/shipments",status_code=status.HTTP_200_OK,response_model=ShipmentRead)
-def get_shipment(id: int, session : SessionDep):
-    shipment = session.get(Shipment,id)
+async def get_shipment(id: int, session : SessionDep):
+    shipment = await session.get(Shipment,id)
     if shipment is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -25,20 +25,20 @@ def get_shipment(id: int, session : SessionDep):
 
 
 @router.post("/shipments",status_code=status.HTTP_201_CREATED,response_model=None)
-def new_shipment(shipment: ShipmentCreate, session : SessionDep):
+async def new_shipment(shipment: ShipmentCreate, session : SessionDep):
     new_shipment = Shipment(
         **shipment.model_dump(),
         status=ShipmentStatus.place,
         esitmated_delivery=datetime.now() + timedelta(days=3)
     )
     session.add(new_shipment)
-    session.commit()
-    session.refresh(new_shipment)
+    await session.commit()
+    await session.refresh(new_shipment)
     return {"id" : new_shipment.id}
 
 
 @router.patch("/shipments",response_model=ShipmentRead)
-def update_shipments(
+async def update_shipments(
     id: int,shipment_update: ShipmentUpdate, session: SessionDep
 ):
     update = shipment_update.model_dump(exclude_none=True)
@@ -47,18 +47,19 @@ def update_shipments(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No data provided to update"
         )
-    shipment = session.get(Shipment,id)
+    shipment = await session.get(Shipment,id)
     shipment.sqlmodel_update(update)
     session.add(shipment)
-    session.commit()
-    session.refresh(shipment)
+    await session.commit()
+    await session.refresh(shipment)
 
     return shipment
 
 
 @router.delete("/shipments",status_code=status.HTTP_200_OK,response_model=None)
-def delete_shipment(id: int,session: SessionDep):
-    session.delete(session.get(Shipment,id))
+async def delete_shipment(id: int,session: SessionDep):
+    await session.delete(await session.get(Shipment,id))
+    await session.commit()
     return {
         "detail" : f"The shipment with id {id} was deleted"
     }
